@@ -1,0 +1,12 @@
+[Unit]
+Description=LED word clock
+Before=multi-user.target
+
+[Service]
+ExecStart=/home/pi/clock/clock.py
+StandardOutput=journal
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
