@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 import unittest
 import clock
 import time
