@@ -2,8 +2,10 @@ import smbus
 import time
 import sys
 
+from led_grid import LedGrid
 
-class AS1130:
+
+class AS1130LedGrid(LedGrid):
     """ class for easier use of AS1130 chips on an I2C bus """
     # Ram section selection
     REG_SELECTION =             0xFD
@@ -49,19 +51,21 @@ class AS1130:
         time.sleep(0.01)
         self._init_ram_config()
         self._init_control_register()
-        # To light up the LEDs set the shdn bit to 1 for normal operation mode (see Table 23 on page 26).
-        self._select_ram_section(AS1130.REG_CONTROL)
-        self._write_byte(AS1130.REG_SHUTDOWN, 0x03)
+        # To light up the LEDs set the shdn bit to 1 for normal operation mode
+        # (see Table 23 on page 26).
+        self._select_ram_section(AS1130LedGrid.REG_CONTROL)
+        self._write_byte(AS1130LedGrid.REG_SHUTDOWN, 0x03)
 
     def _init_ram_config(self):
-        """ Define RAM Configuration; bit mem_conf in the AS1130 Config Register (see Table 20 on page 25)
+        """ Define RAM Configuration; bit mem_conf in the AS1130 Config Register
+         (see Table 20 on page 25)
             -On/Off Frames
             -Blink & PWM Sets
             -Dot Correction, if specified
         """
         # Define RAM config
-        self._select_ram_section(AS1130.REG_CONTROL)
-        self._write_byte(AS1130.REG_CONFIG, 0x01)
+        self._select_ram_section(AS1130LedGrid.REG_CONTROL)
+        self._write_byte(AS1130LedGrid.REG_CONFIG, 0x01)
         # Clear frame
         self.clear()
 
@@ -74,23 +78,24 @@ class AS1130:
             -Current Source
             -Display picture / play movie
         """
-        self._select_ram_section(AS1130.REG_CONTROL)
+        self._select_ram_section(AS1130LedGrid.REG_CONTROL)
         # Current source
-        self._write_byte(AS1130.REG_CURRENT_SOURCE, 0xFF)
+        self._write_byte(AS1130LedGrid.REG_CURRENT_SOURCE, 0xFF)
         # Display picture
-        self._write_byte(AS1130.REG_PICTURE, int("01000000", 2))
+        self._write_byte(AS1130LedGrid.REG_PICTURE, int("01000000", 2))
         # Set scan limit
-        self._write_byte(AS1130.REG_DISPLAY_OPTION, int("00101010", 2))
+        self._write_byte(AS1130LedGrid.REG_DISPLAY_OPTION, int("00101010", 2))
 
     def set_led(self, x, y, value=True):
         """ Set (or clear) the LED at the coordinates x, y """
         assert(0 <= x < self.WIDTH)
         assert(0 <= y < self.HEIGHT)
-        self._select_ram_section(AS1130.REG_FRAME_0)
-        self._set_bit_field(AS1130.ADDRESS_MAP[y][x][0], AS1130.ADDRESS_MAP[y][x][1], value)
+        self._select_ram_section(AS1130LedGrid.REG_FRAME_0)
+        self._set_bit_field(AS1130LedGrid.ADDRESS_MAP[y][x][0],
+                            AS1130LedGrid.ADDRESS_MAP[y][x][1], value)
 
     def clear(self):
-        self._select_ram_section(AS1130.REG_FRAME_0)
+        self._select_ram_section(AS1130LedGrid.REG_FRAME_0)
         for i in range(0xF):
             self._write_byte(2 * i, 0x00)
             self._write_byte(2 * i + 1, 0x00)
@@ -106,7 +111,7 @@ class AS1130:
             time.sleep(0.0001)
 
     def _set_bit_field(self, addr, bit_field, value=True):
-        self._select_ram_section(AS1130.REG_FRAME_0)
+        self._select_ram_section(AS1130LedGrid.REG_FRAME_0)
         data = self._read_byte(addr)
         if value:
             data |= bit_field
@@ -115,18 +120,18 @@ class AS1130:
         self._write_byte(addr, data)
 
     def _set_blink_all(self, value):
-        self._select_ram_section(AS1130.REG_PWM_0)
+        self._select_ram_section(AS1130LedGrid.REG_PWM_0)
         for i in range(0x0, 0x17 + 1):
             self._write_byte(i, value)
 
     def _set_pwm_all(self, value):
-        self._select_ram_section(AS1130.REG_PWM_0)
+        self._select_ram_section(AS1130LedGrid.REG_PWM_0)
         for i in range(0x18, 0x9B + 1):
             self._write_byte(i, value)
 
     def _select_ram_section(self, reg):
         """ Select the RAM section """
-        self._write_byte(AS1130.REG_SELECTION, reg)
+        self._write_byte(AS1130LedGrid.REG_SELECTION, reg)
 
     def _write_byte(self, reg, value):
         """ Write a byte to this chips address """
