@@ -1,25 +1,35 @@
-# LED clock python driver for AS1130
+# LED word clock
+A personal project containing some basic code to drive an LED grid used to represent a clock face
+that sits in my front room :D. Much like that seen on https://www.timeanddate.com/wordclock/.
 
-A personal project containing some very basic helper code to initialise an AS1130 and use it to
-drive a charlieplexed LED array to use as a clock that sits in my front room :D. I use a raspberry
-pi 2 Model B as a controller because it's what I had lying around but should work with anything.
+This code has evolved over time and in its current form supports two types of LED grid:
+* AS1130 - a dedicated IC, that utilises a charlieplexed grid of LEDs, controlled over i2c.
+* NeoPixels - individually addressable RGB LEDs, that can be chained, controlled over one wire.
+
+In both cases a simple python app is running on a raspberry pi 2 model B as a controller because
+that is what I had lying around, but it should work on any hardware that supports the desired
+interface.
 
 ## Dependencies
-The control code is python 2.x based and should only need the following dependency:
-* pysmbus
+The control code is python 3.x based, the dependencies depend on the desired interface but they can
+installed using `python3 -m pip install -r requirements.txt`.
 
-## Install
-1. Check what i2c address your AS1130 is using, mine was `0x30` on the first i2c bus on the pi hence
-the following init code:
+## Configuring
+The code is a bit hacky, and the config is quite specific to some hardware choices I have made
+for example i2c addresses and physical LED locations so this config may need changing.
 
+Some config can be done at runtime:
 ```
-self.chip = AS1130(0, 0x30)
+usage: clock.py [-h] [--grid {neo,as1130}]
+
+Word clock.
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --grid {neopixel,as1130}
+                        choose grid hardware
 ```
 
-2. Copy over the code to the controller e.g. under `/home/pi`
-3. Install `sysvinit-clock.sh` to `/etc/init.d/clock.sh` on the controller and do any local config
-required. (Don't forget to symlink it under `/etc/rc5.d/` for it to run).
-
-## TODO
-* Sort out the corners to represent minutes
-* Generalise the config
+## Deploying
+1. Check you have configured the code for your needs.
+2. Run the deployment script `./scripts/deploy-to-target.sh <ip-of-pi>`
