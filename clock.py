@@ -4,7 +4,7 @@ import datetime
 import logging
 import time
 
-from as1130 import AS1130
+from as1130_led_grid import AS1130LedGrid
 
 
 class Clock:
@@ -111,7 +111,7 @@ class Clock:
     
     def __init__(self, animations_on=True):
         self.animations_on = animations_on
-        self.chip = AS1130(0, 0x30)
+        self.grid = AS1130LedGrid(0, 0x30)
         self.minute = None
 
     def start(self):
@@ -133,16 +133,16 @@ class Clock:
             if self.minute != minute:
                 self.minute = minute
                 if self.animations_on:
-                    self.chip.fade_out()
-                self.chip.clear()
-                list(map(lambda coord: self.chip.set_led(*coord),
+                    self.grid.fade_out()
+                self.grid.clear()
+                list(map(lambda coord: self.grid.set_led(*coord),
                     self.CONFIG["common"] +
                     self.CONFIG["hours"][str(hour)] +
                     self.CONFIG["fiveminutes"][str(minute - (minute % 5))]
                     # + self.CONFIG["minutes"][str(minute % 5)]
                     ))
                 if self.animations_on:
-                    self.chip.fade_in()
+                    self.grid.fade_in()
         except Exception as e:
             logging.exception(e)
             self.update_time(hour, minute)
