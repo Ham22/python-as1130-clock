@@ -109,9 +109,9 @@ class Clock:
         }
     }
     
-    def __init__(self, animations_on=True):
+    def __init__(self, grid, animations_on=True):
+        self.grid = grid
         self.animations_on = animations_on
-        self.grid = AS1130LedGrid(0, 0x30)
         self.minute = None
 
     def start(self):
@@ -145,10 +145,9 @@ class Clock:
                     self.grid.fade_in()
         except Exception as e:
             logging.exception(e)
-            self.update_time(hour, minute)
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    clock = Clock()
+    clock = Clock(AS1130LedGrid(0, 0x30))
     clock.start()

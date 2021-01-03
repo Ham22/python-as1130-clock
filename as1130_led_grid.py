@@ -1,4 +1,3 @@
-import smbus
 import time
 import sys
 
@@ -46,6 +45,7 @@ class AS1130LedGrid(LedGrid):
 
     def __init__(self, bus, address):
         """ Initialise the chip """
+        import smbus  # Only import if constructed to allow unittesting
         self.BUS = smbus.SMBus(bus)
         self.ADDRESS = address
         time.sleep(0.01)
