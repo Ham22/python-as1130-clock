@@ -118,12 +118,10 @@ class Clock:
         while True:
             t = datetime.datetime.now()
             self.update_time(t.hour, t.minute)
-            time.sleep(1)
+            time.sleep(5)
 
     def update_time(self, hour, minute):
         try:
-            logging.debug("{}:{}".format(hour, minute))
-            minute = int(5 * round(float(minute)/5))
             hour = hour + 1 if 55 < minute else hour
             minute = minute % 60
             next_hour = 30 < minute <= 55
@@ -138,8 +136,8 @@ class Clock:
                 list(map(lambda coord: self.grid.set_led(*coord),
                     self.CONFIG["common"] +
                     self.CONFIG["hours"][str(hour)] +
-                    self.CONFIG["fiveminutes"][str(minute - (minute % 5))]
-                    # + self.CONFIG["minutes"][str(minute % 5)]
+                    self.CONFIG["fiveminutes"][str(minute - (minute % 5))] +
+                    self.CONFIG["minutes"][str(minute % 5)]
                     ))
                 if self.animations_on:
                     self.grid.fade_in()
