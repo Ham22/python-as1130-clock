@@ -3,8 +3,8 @@
 from as1130 import AS1130
 import datetime
 import time
-import os
 import logging
+
 
 class Clock(object):
     CONFIG = {
@@ -116,10 +116,10 @@ class Clock(object):
     def start(self):
         while True:
             t = datetime.datetime.now()
-            self.updateTime(t.hour, t.minute)
+            self.update_time(t.hour, t.minute)
             time.sleep(1)
 
-    def updateTime(self, hour, minute):
+    def update_time(self, hour, minute):
         try:
             logging.debug("{}:{}".format(hour, minute))
             minute = int(5 * round(float(minute)/5))
@@ -132,15 +132,16 @@ class Clock(object):
             if self.minute != minute:
                 self.minute = minute
                 if self.animations_on:
-                    self.chip.fadeOut()
+                    self.chip.fade_out()
                 self.chip.clear()
-                map(lambda coord: self.chip.setLed(*coord),  self.CONFIG["common"] + self.CONFIG["hours"][str(hour)] + \
-                self.CONFIG["fiveminutes"][str(minute - (minute % 5))]) #+ self.CONFIG["minutes"][str(minute % 5)]                
+                map(lambda coord: self.chip.set_led(*coord), self.CONFIG["common"] + self.CONFIG["hours"][str(hour)] + \
+                    self.CONFIG["fiveminutes"][str(minute - (minute % 5))]) #+ self.CONFIG["minutes"][str(minute % 5)]
                 if self.animations_on:
-                    self.chip.fadeIn()
+                    self.chip.fade_in()
         except Exception as e:
             logging.exception(e)
-            self.updateTime(hour, minute)
+            self.update_time(hour, minute)
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)

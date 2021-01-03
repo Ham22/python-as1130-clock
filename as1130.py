@@ -4,6 +4,7 @@ import smbus
 import time
 import sys
 
+
 class AS1130(object):
     """ class for easier use of AS1130 chips on an I2C bus """
     # Ram section selection
@@ -43,112 +44,103 @@ class AS1130(object):
         [(0x13, 0x02), (0x15, 0x02), (0x15, 0x01), (0x14, 0x80), (0x14, 0x40), (0x14, 0x20), (0x14, 0x10), (0x14, 0x08), (0x14, 0x04), (0x14, 0x02), (0x14, 0x01)],
     ]
 
-
-
     def __init__(self, bus, address):
         """ Initialise the chip """
         self.BUS = smbus.SMBus(bus)
         self.ADDRESS = address
         time.sleep(0.01)
-        self.initRAMConfig()
-        self.initControlRegister()
+        self._init_ram_config()
+        self._init_control_register()
         # To light up the LEDs set the shdn bit to 1 for normal operation mode (see Table 23 on page 26).
-        self.selectRamSection(AS1130.REG_CONTROL)
-        self.writeByte(AS1130.REG_SHUTDOWN, 0x03)
+        self._select_ram_section(AS1130.REG_CONTROL)
+        self._write_byte(AS1130.REG_SHUTDOWN, 0x03)
 
-    def initRAMConfig(self):
+    def _init_ram_config(self):
         """ Define RAM Configuration; bit mem_conf in the AS1130 Config Register (see Table 20 on page 25)
             -On/Off Frames
             -Blink & PWM Sets
             -Dot Correction, if specified
         """
         # Define RAM config
-        self.selectRamSection(AS1130.REG_CONTROL)
-        self.writeByte(AS1130.REG_CONFIG, 0x01)
+        self._select_ram_section(AS1130.REG_CONTROL)
+        self._write_byte(AS1130.REG_CONFIG, 0x01)
         # Clear frame
         self.clear()
 
         # Define blink & PWM Sets
-        self._setBlinkAll(0x00)
-        self._setPwmAll(0xFF)
+        self._set_blink_all(0x00)
+        self._set_pwm_all(0xFF)
 
-    def initControlRegister(self):
+    def _init_control_register(self):
         """ Define Control Register (see Table 13 on page 20)
             -Current Source
             -Display picture / play movie
         """
-        self.selectRamSection(AS1130.REG_CONTROL)
+        self._select_ram_section(AS1130.REG_CONTROL)
         # Current source
-        self.writeByte(AS1130.REG_CURRENT_SOURCE, 0xFF)
+        self._write_byte(AS1130.REG_CURRENT_SOURCE, 0xFF)
         # Display picture
-        self.writeByte(AS1130.REG_PICTURE, int("01000000", 2))
+        self._write_byte(AS1130.REG_PICTURE, int("01000000", 2))
         # Set scan limit
-        self.writeByte(AS1130.REG_DISPLAY_OPTION, int("00101010", 2))
+        self._write_byte(AS1130.REG_DISPLAY_OPTION, int("00101010", 2))
 
-    def setLed(self, x, y, value=True):
+    def set_led(self, x, y, value=True):
         """ Set (or clear) the LED at the coordinates x, y """
         assert(0 <= x < self.WIDTH)
         assert(0 <= y < self.HEIGHT)
-        self.selectRamSection(AS1130.REG_FRAME_0)
-        self._setBitField(AS1130.ADDRESS_MAP[y][x][0], AS1130.ADDRESS_MAP[y][x][1], value)
-
+        self._select_ram_section(AS1130.REG_FRAME_0)
+        self._set_bit_field(AS1130.ADDRESS_MAP[y][x][0], AS1130.ADDRESS_MAP[y][x][1], value)
 
     def clear(self):
-        self.selectRamSection(AS1130.REG_FRAME_0)
+        self._select_ram_section(AS1130.REG_FRAME_0)
         for i in range(0xF):
-            self.writeByte(2 * i, 0x00)
-            self.writeByte(2 * i + 1, 0x00)
+            self._write_byte(2 * i, 0x00)
+            self._write_byte(2 * i + 1, 0x00)
 
-    def set(self):
-        self.selectRamSection(AS1130.REG_FRAME_0)
-        for i in range(0xF):
-            self.writeByte(2 * i, 0xFF)
-            self.writeByte(2 * i + 1, 0xFF)
-
-    def fadeIn(self):
+    def fade_in(self):
         for i in range(101):
-            self._setPwmAll(0xFF * i / 100)
+            self._set_pwm_all(0xFF * i / 100)
             time.sleep(0.0001)
 
-    def fadeOut(self):
+    def fade_out(self):
         for i in range(0, 101):
-            self._setPwmAll(0xFF * (100 - i) /100)
+            self._set_pwm_all(0xFF * (100 - i) / 100)
             time.sleep(0.0001)
 
-    def _setBitField(self, addr, bitField, value=True):
-        self.selectRamSection(AS1130.REG_FRAME_0)
-        data = self.readByte(addr)
+    def _set_bit_field(self, addr, bit_field, value=True):
+        self._select_ram_section(AS1130.REG_FRAME_0)
+        data = self._read_byte(addr)
         if value:
-            data |= bitField
+            data |= bit_field
         else:
-            data &= ~bitField
-        self.writeByte(addr, data)
+            data &= ~bit_field
+        self._write_byte(addr, data)
 
-    def _setBlinkAll(self, value):
-        self.selectRamSection(AS1130.REG_PWM_0)
+    def _set_blink_all(self, value):
+        self._select_ram_section(AS1130.REG_PWM_0)
         for i in range(0x0, 0x17 + 1):
-            self.writeByte(i, value)
+            self._write_byte(i, value)
 
-    def _setPwmAll(self, value):
-        self.selectRamSection(AS1130.REG_PWM_0)
+    def _set_pwm_all(self, value):
+        self._select_ram_section(AS1130.REG_PWM_0)
         for i in range(0x18, 0x9B + 1):
-            self.writeByte(i, value)
+            self._write_byte(i, value)
 
-    def selectRamSection(self, reg):
+    def _select_ram_section(self, reg):
         """ Select the RAM section """
-        self.writeByte(AS1130.REG_SELECTION, reg)
+        self._write_byte(AS1130.REG_SELECTION, reg)
 
-    def writeByte(self, reg, value):
+    def _write_byte(self, reg, value):
         """ Write a byte to this chips address """
         self.BUS.write_byte_data(self.ADDRESS, reg, value)
 
-    def readByte(self, reg):
+    def _read_byte(self, reg):
         """ Read a byte from this chips address """
         return self.BUS.read_byte_data(self.ADDRESS, reg)
 
     def dump(self, reg):
         print "Dump of {:02x}:".format(reg)
-        self.selectRamSection(reg)
+        self._select_ram_section(reg)
         sys.stdout.write("{:4}".format(""))
         for i in range(0x0, 0xF + 1):
             sys.stdout.write("{:2x} ".format(i))
@@ -156,8 +148,6 @@ class AS1130(object):
         for i in range(0x0, 0xF0 + 1, 0x10):
             sys.stdout.write("{:02x}: ".format(i))
             for j in range(0x0, 0xF + 1):
-                sys.stdout.write("{:02x} ".format(self.readByte(i + j)))
+                sys.stdout.write("{:02x} ".format(self._read_byte(i + j)))
             print ""
         print "\n"
-    
-    
