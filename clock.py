@@ -1,12 +1,13 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
+
+import datetime
+import logging
+import time
 
 from as1130 import AS1130
-import datetime
-import time
-import logging
 
 
-class Clock(object):
+class Clock:
     CONFIG = {
         "common": [
             [0, 0], [1, 0],
@@ -134,8 +135,12 @@ class Clock(object):
                 if self.animations_on:
                     self.chip.fade_out()
                 self.chip.clear()
-                map(lambda coord: self.chip.set_led(*coord), self.CONFIG["common"] + self.CONFIG["hours"][str(hour)] + \
-                    self.CONFIG["fiveminutes"][str(minute - (minute % 5))]) #+ self.CONFIG["minutes"][str(minute % 5)]
+                list(map(lambda coord: self.chip.set_led(*coord),
+                    self.CONFIG["common"] +
+                    self.CONFIG["hours"][str(hour)] +
+                    self.CONFIG["fiveminutes"][str(minute - (minute % 5))]
+                    # + self.CONFIG["minutes"][str(minute % 5)]
+                    ))
                 if self.animations_on:
                     self.chip.fade_in()
         except Exception as e:

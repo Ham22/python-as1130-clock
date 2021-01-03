@@ -1,11 +1,9 @@
-#!/usr/bin/python2
-
 import smbus
 import time
 import sys
 
 
-class AS1130(object):
+class AS1130:
     """ class for easier use of AS1130 chips on an I2C bus """
     # Ram section selection
     REG_SELECTION =             0xFD
@@ -139,15 +137,15 @@ class AS1130(object):
         return self.BUS.read_byte_data(self.ADDRESS, reg)
 
     def dump(self, reg):
-        print "Dump of {:02x}:".format(reg)
+        print("Dump of {:02x}:".format(reg))
         self._select_ram_section(reg)
         sys.stdout.write("{:4}".format(""))
         for i in range(0x0, 0xF + 1):
             sys.stdout.write("{:2x} ".format(i))
-        print""
+        print("")
         for i in range(0x0, 0xF0 + 1, 0x10):
             sys.stdout.write("{:02x}: ".format(i))
             for j in range(0x0, 0xF + 1):
                 sys.stdout.write("{:02x} ".format(self._read_byte(i + j)))
-            print ""
-        print "\n"
+            print("")
+        print("\n")
