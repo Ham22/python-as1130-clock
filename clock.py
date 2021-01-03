@@ -2,9 +2,9 @@
 
 import datetime
 import logging
-import time
 
-from as1130_led_grid import AS1130LedGrid
+import argparse
+import time
 
 
 class Clock:
@@ -147,5 +147,16 @@ class Clock:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    clock = Clock(AS1130LedGrid(0, 0x30))
+    parser = argparse.ArgumentParser(description='Word clock.')
+    parser.add_argument("--grid", default="neo", type=str,
+                        choices=["neopixel", "as1130"],
+                        help="choose grid hardware")
+    args = parser.parse_args()
+    if args.grid == "as1130":
+        from as1130_led_grid import AS1130LedGrid
+        clock = Clock(AS1130LedGrid(0, 0x30))
+    else:
+        from neopixel_led_grid import NeoPixelLedGrid
+        clock = Clock(NeoPixelLedGrid())
+
     clock.start()
